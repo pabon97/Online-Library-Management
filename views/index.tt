@@ -45,14 +45,13 @@
     [% FOREACH book IN books %]
     <div class="col-md-4 ">
       <div class="card mb-3" style="width: 18rem; height:30rem">
-        <img width="250px" height="250px" src=[% url(book.image_url) %]class="card-img-top" alt="Book Cover">
+        <img width="250px" height="250px" src=[% book.image_url %]class="card-img-top" alt="Book Cover">
         <div class="card-body">
           <h5 class="card-title fs-3">[% book.title %]</h5>
           <h5 class="card-title">[% book.description %]</h5>
           <p class="card-title">Author: [% book.author %]</p>
           <h6 class="card-subtitle mb-2">[% book.created_at %]</h6>
           <a href="/book/details/[% book.id %]"><button class="btn btn-success">Details</button></a>
-
         </div>
       </div>
     </div>

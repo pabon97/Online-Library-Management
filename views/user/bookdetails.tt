@@ -1,4 +1,10 @@
-
+<div id="flash_message">
+        [% IF flash_message %]
+        <div class="alert alert-success">
+            [% flash_message %]
+        </div>
+        [% END %]
+    </div>
 <div class="container">
     <h1 class="text-center">Book Details</h1>
     <div class="d-flex justify-content-center align-items-center my-4">
