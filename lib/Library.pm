@@ -60,7 +60,7 @@ get '/admin/registration' => sub {
 
 	# Clear the flash message
 	app->session->write('flash_message', undef);
-	template 'adminregistration', {flash_message => $flash_message};
+	template 'admin/adminregistration', {flash_message => $flash_message};
 
 };
 
@@ -100,7 +100,12 @@ post '/admin/registration' => sub {
 
 # admin login route
 get '/admin/login'=> sub {
-	template 'adminlogin';
+	# Check for a flash message in the stash
+	my $flash_message = app->session->read('flash_message');
+
+	# Clear the flash message
+	app->session->write('flash_message', undef);
+	template 'admin/adminlogin', {flash_message=> $flash_message};
 };
 
 post '/admin/login' => sub {
@@ -121,10 +126,12 @@ post '/admin/login' => sub {
 			session admin =>{email=> $admin_exists->email, name=> $admin_exists->username, role=>'Admin'};
 			redirect '/profile';
 		}
+		
 
 
 	}
-	return "Wrong credentials!!";
+	app->session->write('flash_message', 'Wrong Credentials');
+	redirect '/admin/login';
 
 
 };
@@ -152,7 +159,7 @@ get '/dashboard/allbooks' => sub {
 
 	# Clear the flash message
 	app->session->write('flash_message', undef);
-	template 'allbooks' => {books => \@allbooks, flash_message=> $flash_message};
+	template 'admin/allbooks' => {books => \@allbooks, flash_message=> $flash_message};
 	}
 	else {
 		return redirect uri_for('/admin/login')
@@ -170,7 +177,7 @@ get '/dashboard/addbook' => sub{
 
 	# Clear the flash message
 	 app->session->write('flash_message', undef);
-	 template 'addbook', {flash_message => $flash_message};
+	 template 'admin/addbook', {flash_message => $flash_message};
 	}
 	else {
 		return redirect uri_for ('/admin/login');
@@ -222,7 +229,7 @@ get '/dashboard/updatebook/:id' => sub {
 
 	    # Clear the flash message
 	    app->session->write('flash_message', undef);
-		template 'updatebook', {bookInfo => $bookInfo, flash_message=> $flash_message};
+		template 'admin/updatebook', {bookInfo => $bookInfo, flash_message=> $flash_message};
 	}
 	else {
 		return redirect uri_for('/admin/login')
@@ -299,7 +306,7 @@ get '/dashboard/allbooks/:id'=> sub{
 
 #show login page
 get '/login' => sub {
-	template 'login';
+	template 'user/login';
 };
 
 post '/login' => sub {
@@ -346,7 +353,7 @@ get '/registration' => sub {
 
 	# Clear the flash message
 	app->session->write('flash_message', undef);
-	template 'registration', {flash_message=> $flash_message};
+	template 'user/registration', {flash_message=> $flash_message};
 };
 
 # add new users to db
@@ -384,7 +391,7 @@ get '/logout' => sub {
 #show details of books
 get '/book/details/:id'=> sub {
 	my $book = schema->resultset('Book')->find(params->{id});
-	template 'bookdetails', { book => $book };
+	template 'user/bookdetails', { book => $book };
 
 };
 

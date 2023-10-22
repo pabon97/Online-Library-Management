@@ -1,4 +1,11 @@
-<section class="vh-100" style="background-color: #508bfc;">
+<div id="flash_message">
+        [% IF flash_message %]
+        <div class="alert alert-danger">
+            [% flash_message %]
+        </div>
+        [% END %]
+    </div>
+<section class="vh-100" style="background-color: #508bfc;">x
   <div class="container py-5 h-100">
     <div class="row d-flex justify-content-center align-items-center h-100">
       <div class="col-12 col-md-9 col-lg-7 col-xl-6">
