@@ -12,10 +12,7 @@
          <span class="navbar-toggler-icon"></span>
      </button>
      <div class="collapse navbar-collapse" id="navbarNav">
-         <ul class="navbar-nav ml-auto">
-             <li class="nav-item active">
-                 <a class="nav-link" href="/">Home</a>
-             </li>
+         <ul class="navbar-nav ml-auto"
              <li class="nav-item">
                  <a class="nav-link" href="/logout">Logout</a>
              </li>
@@ -29,6 +26,9 @@
          <nav id="sidebar" class="col-md-3 col-lg-2 d-md-block bg-light sidebar">
              <div class="position-sticky">
                  <ul class="nav flex-column my-3">
+                  <li class="nav-item active">
+                 <a class="nav-link" href="/">Home</a>
+             </li>
                      <li class="nav-item">
                          <a class="nav-link active" href="/dashboard/addbook">
                              Add Book
@@ -36,11 +36,6 @@
                      </li>
                      
                      <li class="nav-item">
-                         <a class="nav-link" href="/dashboard/allbooks">
-                             All books
-                         </a>
-                     </li>
-                      <li class="nav-item">
                          <a class="nav-link" href="/dashboard/allusers">
                              All Users
                          </a>
@@ -53,32 +48,37 @@
          <!-- Page Content -->
          <main class="col-md-9 ms-sm-auto col-lg-9 px-md-4">
              <!-- Content goes here -->
-             <h1 class="text-center my-4">All Books</h1>
-             [% IF books.0.defined %]
+             <h1 class="text-center my-4">All Users</h1>
+             [% IF users.0.defined %]
            
              <!-- Table -->
              <table class="table">
                  <thead>
                      <tr>
                          <th scope="col">id</th>
-                         <th scope="col">title</th>
-                         <th scope="col">author</th>
-                         <th scope="col">description</th>
-                           <th scope="col">modify</th>
+                         <th scope="col">name</th>
+                         <th scope="col">email</th>
+                         <th scope="col">user status</th>
+                        <th scope="col"> manage status</th>
+                        <th scope="col">activity</th>
+
                      </tr>
                  </thead>
                  <tbody>
-                   [% FOREACH book IN books %]
+                   [% FOREACH user IN users %]
                      <tr>
-                         <th scope="row">[% book.id %]</th>
-                         <td>[% book.title %]</td>
-                         <td>[% book.author %]</td>
-                         <td>[% book.description %]</td>
+                         <th scope="row">[% user.id %]</th>
+                         <td>[% user.username %]</td>
+                         <td>[% user.email %]</td>
+                         <td>[% user.status %]</td>
                          <td>
-                        <a href="/dashboard/updatebook/[% book.id %]">
-                         <button type="button" class="btn btn-info">Update</button>
-                        </a>
-                       <a href="/dashboard/allbooks/[% book.id %]">
+                           <form method="post" action="/dashboard/allusers/[% user.id %]">
+                         <button type="submit" class="btn btn-info">Active</button>
+                        
+                        </form>
+                         </td>
+                         <td>
+                       <a href="/dashboard/allusers/[% user.id %]">
                          <button type="button" class="btn btn-danger">Delete</button>
                        </a>
                          </td>

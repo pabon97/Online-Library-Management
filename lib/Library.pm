@@ -147,6 +147,51 @@ get '/dashboard'=> sub {
 
 };
 
+# Show all users in admin table
+get '/dashboard/allusers' => sub {
+	if (session 'admin'){
+		my @allusers = schema->resultset('User')->all();
+
+		# return \@allbooks
+
+		# Check for a flash message in the stash
+		my $flash_message = app->session->read('flash_message');
+
+		# Clear the flash message
+		app->session->write('flash_message', undef);
+		template 'admin/allusers' => {users => \@allusers, flash_message=> $flash_message};
+	}else {
+		return redirect uri_for('/admin/login');
+	}
+};
+# Approve single User by id
+post '/dashboard/allusers/:id'=> sub{
+	my $user_status = schema->resultset('User')->find({id=> params->{id}});
+	# return $user_status->status;
+
+	  if ($user_status->status == 0) {
+        $user_status->update({ status => 1 });
+        return 'Status updated';
+    } else {
+        return 'Status not updated';
+    }
+
+};
+
+# Delete user by id in admin table
+get '/dashboard/allusers/:id'=> sub{
+	my $User = schema->resultset('User')->find({id=> params->{id}});
+
+	# return $User;
+	if ($User) {
+		$User->delete;  # Delete the book if it exists
+		app->session->write('flash_message', 'User removed successfully');
+	} else {
+		app->session->write('flash_message', 'User not found');  # Set an error message
+	}
+	redirect '/dashboard/allusers';
+};
+
 # Admin show all books
 
 get '/dashboard/allbooks' => sub {
@@ -328,9 +373,15 @@ post '/login' => sub {
 	my $login_data = params();
 	my $user_exists = schema->resultset('User')->find({email => params->{email}});
 
+	# if ($user_exists->status=> {0}) {
+	# 	return 'user is inactive'
+	# }
+	# else {
+	# 	return 'active user'
+	# }
 	# return $user_exists->user_id;
 
-	if($user_exists){
+	if($user_exists && $user_exists->status == 1){
 		my $salt = "saltstring";
 		my $hashed_password = sha1_hex($login_data->{password} . $salt);
 
@@ -345,7 +396,7 @@ post '/login' => sub {
 
 
 	}
-	return "Wrong credentials!!";
+	return "Wrong credentials or Inactive User";
 
 
 };
@@ -388,6 +439,7 @@ post '/registration' => sub {
 			username => $user_data->{name},
 			email => $user_data->{email},
 			password => $hashed_password,
+			status => 0,
 		}
 
 	);
@@ -406,6 +458,7 @@ get '/logout' => sub {
 #show details of books
 get '/book/details/:id'=> sub {
 	my $db_host = $ENV{DB_HOST};
+
 	# return $db_host;
 	my $book = schema->resultset('Book')->find(params->{id});
 	template 'user/bookdetails', { book => $book, db_host=> $db_host };

@@ -1,17 +1,6 @@
-<!--
-    Credit goes to the Ruby on Rails team for this page
-    has been heavily based on the default Rails page that is
-    built with a scaffolded application.
-
-    Thanks a lot to them for their work.
-
-    See Ruby on Rails if you want a kickass framework in Ruby:
-    http://www.rubyonrails.org/
--->
-
 <nav class="navbar navbar-expand-sm bg-primary navbar-dark">
   <div class="container-fluid flex justify-between">
-    <a class="navbar-brand" href="#">Library management System</a>
+    <a class="navbar-brand" href="/">Library management System</a>
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNavAltMarkup"
       aria-controls="navbarNavAltMarkup" aria-expanded="false" aria-label="Toggle navigation">
       <span class="navbar-toggler-icon"></span>
@@ -21,6 +10,7 @@
         <a class="nav-link active" aria-current="page" href="/">Home</a>
         <a class="nav-link active" href="/registration">Registration</a>
          <a class="nav-link active" href="/profile">Profile</a>
+         <a class="nav-link active" href="/dashboard">Dashboard</a>
          
       <div class="mt-3">
         <p class="text-white">[% user.user_name %]</p>
