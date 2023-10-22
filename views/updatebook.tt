@@ -1,0 +1,75 @@
+  <div id="flash_message">
+        [% IF flash_message %]
+        <div class="alert alert-success">
+            [% flash_message %]
+        </div>
+        [% END %]
+    </div>
+ <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+     <a class="navbar-brand" href="#">Admin Dashboard</a>
+     <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav"
+         aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+         <span class="navbar-toggler-icon"></span>
+     </button>
+     <div class="collapse navbar-collapse" id="navbarNav">
+         <ul class="navbar-nav ml-auto">
+             <li class="nav-item active">
+                 <a class="nav-link" href="/">Home</a>
+             </li>
+             <li class="nav-item">
+                 <a class="nav-link" href="/logout">Logout</a>
+             </li>
+         </ul>
+     </div>
+ </nav>
+
+ <!-- Sidebar -->
+ <div class="container-fluid">
+     <div class="row">
+         <nav id="sidebar" class="col-md-3 col-lg-2 d-md-block bg-light sidebar">
+             <div class="position-sticky">
+                 <ul class="nav flex-column my-3">
+                     <li class="nav-item">
+                         <a class="nav-link active" href="/dashboard/addbook">
+                             Add Book
+                         </a>
+                     </li>
+                 
+                     <li class="nav-item">
+                         <a class="nav-link" href="/dashboard/allbooks">
+                             All books
+                         </a>
+                     </li>
+                     <!-- Add more sidebar items as needed -->
+                 </ul>
+             </div>
+         </nav>
+
+         <!-- Page Content -->
+         <main class="col-md-9 ms-sm-auto col-lg-9 px-md-4">
+             <!-- Content goes here -->
+             <h1 class="text-center my-3">Update Book</h1>
+             <!--- Update book form -->
+             <form method="post" action="/dashboard/updatebook/[% bookInfo.id %]">
+                 <div class="form-group">
+                     <label>Book Title</label>
+                     <input name="title" type="text" value=[% bookInfo.title %] class="form-control">
+                 </div>
+                  <div class="form-group">
+                     <label>Book Image</label>
+                     <input name="file" type="file" value=[% bookInfo.image_url %] class="form-control">
+                 </div>
+                 <div class="form-group">
+                     <label>Author</label>
+                     <input name="author" type="text" value=[% bookInfo.author %] class="form-control">
+                 </div>
+                 <div class="form-group">
+                     <label>Description</label>
+                     <input name="description" type="text" value=[% bookInfo.description %] class="form-control">
+                 </div>
+
+                 <button type="submit" class="btn btn-primary">Submit</button>
+             </form>
+         </main>
+     </div>
+ </div>

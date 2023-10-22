@@ -1,0 +1,67 @@
+<!--
+    Credit goes to the Ruby on Rails team for this page
+    has been heavily based on the default Rails page that is
+    built with a scaffolded application.
+
+    Thanks a lot to them for their work.
+
+    See Ruby on Rails if you want a kickass framework in Ruby:
+    http://www.rubyonrails.org/
+-->
+
+<nav class="navbar navbar-expand-sm bg-primary navbar-dark">
+  <div class="container-fluid flex justify-between">
+    <a class="navbar-brand" href="#">Library management System</a>
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNavAltMarkup"
+      aria-controls="navbarNavAltMarkup" aria-expanded="false" aria-label="Toggle navigation">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+    <div class="collapse navbar-collapse flex justify-content-between" id="navbarNavAltMarkup">
+      <div class="navbar-nav">
+        <a class="nav-link active" aria-current="page" href="/">Home</a>
+        <a class="nav-link active" href="/registration">Registration</a>
+         <a class="nav-link active" href="/profile">Profile</a>
+         
+      <div class="mt-3">
+        <p class="text-white">[% user.user_name %]</p>
+      </div>
+    </div>
+  </div>
+</nav>
+
+<script type="text/javascript">
+  $('#about_env_link').click(function() {
+    $('#about-content').slideToggle('fast', function() {
+      // ok
+    });
+    return false;
+  });
+</script>
+
+<div class="container">
+  <h1 class="text-center">Book List</h1>
+  <div class="row my-5">
+    [% IF books.0.defined %]
+    [% FOREACH book IN books %]
+    <div class="col-md-4 ">
+      <div class="card mb-3" style="width: 18rem; height:30rem">
+        <img width="250px" height="250px" src=[% url(book.image_url) %]class="card-img-top" alt="Book Cover">
+        <div class="card-body">
+          <h5 class="card-title fs-3">[% book.title %]</h5>
+          <h5 class="card-title">[% book.description %]</h5>
+          <p class="card-title">Author: [% book.author %]</p>
+          <h6 class="card-subtitle mb-2">[% book.created_at %]</h6>
+          <a href="/book/details/[% book.id %]"><button class="btn btn-success">Details</button></a>
+
+        </div>
+      </div>
+    </div>
+    [% END %]
+    [% ELSE %]
+    <p class="text-center">Books Not Found</p>
+
+    [% END %]
+  </div>
+</div>
+
+</div>

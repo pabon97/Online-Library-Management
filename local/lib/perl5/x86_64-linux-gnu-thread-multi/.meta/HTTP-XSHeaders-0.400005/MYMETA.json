@@ -1,0 +1,57 @@
+{
+   "abstract" : "Fast XS Header library, replacing HTTP::Headers and HTTP::Headers::Fast.",
+   "author" : [
+      "Gonzalo Diethelm (gonzus@cpan.org)",
+      "Sawyer X (xsawyerx@cpan.org)"
+   ],
+   "dynamic_config" : 0,
+   "generated_by" : "ExtUtils::MakeMaker version 7.62, CPAN::Meta::Converter version 2.150010",
+   "license" : [
+      "mit"
+   ],
+   "meta-spec" : {
+      "url" : "http://search.cpan.org/perldoc?CPAN::Meta::Spec",
+      "version" : 2
+   },
+   "name" : "HTTP-XSHeaders",
+   "no_index" : {
+      "directory" : [
+         "t",
+         "inc"
+      ]
+   },
+   "prereqs" : {
+      "build" : {
+         "requires" : {
+            "ExtUtils::MakeMaker" : "0"
+         }
+      },
+      "configure" : {
+         "requires" : {
+            "ExtUtils::MakeMaker" : "0"
+         }
+      },
+      "runtime" : {
+         "requires" : {
+            "Exporter" : "5.57",
+            "HTTP::Date" : "0",
+            "XSLoader" : "0",
+            "perl" : "5.008009"
+         }
+      },
+      "test" : {
+         "requires" : {
+            "Test::More" : "0"
+         }
+      }
+   },
+   "release_status" : "stable",
+   "resources" : {
+      "repository" : {
+         "type" : "git",
+         "web" : "https://github.com/p5pclub/http-xsheaders"
+      }
+   },
+   "version" : "0.400005",
+   "x_serialization_backend" : "JSON::PP version 4.06"
+}

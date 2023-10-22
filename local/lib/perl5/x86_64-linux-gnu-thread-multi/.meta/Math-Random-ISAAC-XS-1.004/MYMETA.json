@@ -1,0 +1,53 @@
+{
+   "abstract" : "C implementation of the ISAAC PRNG algorithm",
+   "author" : [
+      "Jonathan Yu <jawnsy@cpan.org>"
+   ],
+   "dynamic_config" : 0,
+   "generated_by" : "Module::Build version 0.4234",
+   "license" : [
+      "unrestricted"
+   ],
+   "meta-spec" : {
+      "url" : "http://search.cpan.org/perldoc?CPAN::Meta::Spec",
+      "version" : 2
+   },
+   "name" : "Math-Random-ISAAC-XS",
+   "prereqs" : {
+      "build" : {
+         "requires" : {
+            "ExtUtils::CBuilder" : "0",
+            "ExtUtils::ParseXS" : "0",
+            "Module::Build" : "0.2808_01",
+            "Test::More" : "0.62",
+            "Test::NoWarnings" : "0.084"
+         }
+      },
+      "configure" : {
+         "requires" : {
+            "Module::Build" : "0.2808_01"
+         }
+      },
+      "runtime" : {
+         "recommends" : {
+            "Math::Random::ISAAC" : "0"
+         },
+         "requires" : {
+            "perl" : "5.006"
+         }
+      }
+   },
+   "release_status" : "stable",
+   "resources" : {
+      "bugtracker" : {
+         "web" : "http://rt.cpan.org/NoAuth/Bugs.html?Dist=Math-Random-ISAAC-XS"
+      },
+      "homepage" : "http://search.cpan.org/dist/Math-Random-ISAAC-XS",
+      "repository" : {
+         "type" : "git",
+         "url" : "git://github.com/jawnsy/Math-Random-ISAAC-XS.git"
+      }
+   },
+   "version" : "1.004",
+   "x_serialization_backend" : "JSON::PP version 4.06"
+}
