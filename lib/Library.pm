@@ -405,8 +405,10 @@ get '/logout' => sub {
 
 #show details of books
 get '/book/details/:id'=> sub {
+	my $db_host = $ENV{DB_HOST};
+	# return $db_host;
 	my $book = schema->resultset('Book')->find(params->{id});
-	template 'user/bookdetails', { book => $book };
+	template 'user/bookdetails', { book => $book, db_host=> $db_host };
 
 };
 

@@ -9,7 +9,7 @@
     <h1 class="text-center">Book Details</h1>
     <div class="d-flex justify-content-center align-items-center my-4">
         <div class="mr-3">
-            <img width="350px" height="350px" src=[% book.image_url %] class="card-img-top" alt="...">
+            <img width="350px" height="350px" src="[% db_host %][% book.image_url %]"class="card-img-top" alt="...">
         </div>
         <div class="ml-3">
             <h2>Title: [% book.title %]</h2>

@@ -6,6 +6,7 @@ requires "Digest::SHA";
 requires "Dancer2::Plugin::Database";
 requires "Dancer2::Plugin::Flash";
 requires "Dancer2::Session::Simple";
+requires "Dotenv";
 
 recommends "YAML"                    => "0";
 recommends "URL::Encode::XS"         => "0";
