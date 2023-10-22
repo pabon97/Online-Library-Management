@@ -196,9 +196,12 @@ post '/dashboard/addbook' => sub {
 		my $dir = path(config->{appdir}, 'uploads');
 		mkdir $dir if not -e $dir;
 		my $path = path($dir, $upload->basename);
+
+		# return $path;
 		$upload->link_to($path);
-		$image_url = "/uploads/" . $upload->basename;
-		# return  $upload;
+		$image_url = "uploads/" . $upload->basename;
+
+		# return  $image_url;
 	}
 
 
@@ -212,6 +215,7 @@ post '/dashboard/addbook' => sub {
 			image_url=> $image_url,
 			created_at=> $created_at,
 			updated_at=> $updated_at,
+
 
 		}
 	);
@@ -251,11 +255,14 @@ post '/dashboard/updatebook/:id' => sub {
 	my $upload = request->upload('file');
 	my $image_url;
 	if ($upload) {
-		my $dir = path(config->{appdir}, 'uploads');
+		my $dir = path(config->{appdir}, 'public','uploads');
 		mkdir $dir if not -e $dir;
-		my $path = path($dir, $upload->basename);
+		my $basename = $upload->basename;
+		my $path = path($dir, $basename);
 		$upload->link_to($path);
-		$image_url = "/uploads/" . $upload->basename;
+
+		# $image_url = "/uploads/" . $upload->basename;
+		$image_url = "/uploads/$basename";
 		print "Image URL: $image_url\n";
 	}
 
@@ -445,7 +452,7 @@ post '/book/borrow'=> sub{
 		);
 
 		app->session->write('flash_message', 'Borrowed Book Successfully');
-		redirect '/book/borrow/:id'
+		redirect '/book/borrow/:id';
 
 
 	}else {
