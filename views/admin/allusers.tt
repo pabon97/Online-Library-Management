@@ -40,6 +40,11 @@
                              All Users
                          </a>
                      </li>
+                      <li class="nav-item">
+                            <a class="nav-link" href="/dashboard/allbooks">
+                                All books
+                            </a>
+                        </li>
                      <!-- Add more sidebar items as needed -->
                  </ul>
              </div>
@@ -58,19 +63,23 @@
                          <th scope="col">id</th>
                          <th scope="col">name</th>
                          <th scope="col">email</th>
-                         <th scope="col">user status</th>
-                        <th scope="col"> manage status</th>
-                        <th scope="col">activity</th>
+                          <th scope="col">active status</th>
+                         <th scope="col">borrow status</th>
+                        <th scope="col">manage status</th>
+                        <th scope="col">remove</th>
 
                      </tr>
                  </thead>
                  <tbody>
+                  [% FOREACH borrow IN borrows %]
                    [% FOREACH user IN users %]
                      <tr>
                          <th scope="row">[% user.id %]</th>
                          <td>[% user.username %]</td>
                          <td>[% user.email %]</td>
-                         <td>[% user.status %]</td>
+                         <td>[% IF user.status == 1 %]<p class="text-success">Active</p></td>[% ELSE %]<p class="text-danger">Inactive</p>[% END %]</td> 
+                         <td>[% IF borrow.status == 1 %]<p class="text-danger">borrowed</p>[% ELSE %]<p class="text-success">returned</p>[% END %]</td> 
+                        
                          <td>
                            <form method="post" action="/dashboard/allusers/[% user.id %]">
                          <button type="submit" class="btn btn-info">Active</button>
@@ -79,11 +88,12 @@
                          </td>
                          <td>
                        <a href="/dashboard/allusers/[% user.id %]">
-                         <button type="button" class="btn btn-danger">Delete</button>
+                         <button type="button" class="btn btn-danger">Remove</button>
                        </a>
                          </td>
                      </tr>
                       [% END %]
+                           [% END %]
 
                  </tbody>
              </table>

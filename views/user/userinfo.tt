@@ -1,0 +1,80 @@
+<nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+    <a class="navbar-brand" href="#">[% data.role %] Dashboard</a>
+    <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav"
+        aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+    </button>
+    <div class="collapse navbar-collapse" id="navbarNav">
+        <ul class="navbar-nav ml-auto" <li class="nav-item">
+            <a class="nav-link" href="/logout">Logout</a>
+            </li>
+        </ul>
+    </div>
+</nav>
+
+<!-- Sidebar -->
+<div class="container-fluid">
+    <div class="row">
+        <nav id="sidebar" class="col-md-3 col-lg-2 d-md-block bg-light sidebar">
+            <div class="position-sticky">
+                <ul class="nav flex-column my-3">
+                    <li class="nav-item active">
+                        <a class="nav-link" href="/">Home</a>
+                    </li>
+                    <li class="nav-item active">
+                        <a class="nav-link" href="/dashboard/userinfo">User info</a>
+                    </li>
+                    <!-- Add more sidebar items as needed -->
+                </ul>
+            </div>
+        </nav>
+
+        <!-- Page Content -->
+        <main class="col-md-9 ms-sm-auto col-lg-9 px-md-4">
+            <!-- Content goes here -->
+            <h1 class="text-center my-4">[% data.name %] Info</h1>
+
+            <!-- Table -->
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th scope="col">id</th>
+                        <th scope="col">name</th>
+                        <th scope="col">email</th>
+                        <th scope="col">borrow status</th>
+                        <th scope="col">action</th>
+                       
+
+                    </tr>
+                </thead>
+              
+                <tbody>
+                [% FOREACH borrowdata IN borrowdatas %]
+                    <tr>
+                        <td>[% data.id %]</td>
+                        <td>[% data.name %]</td>
+                        <td>[% data.email %]</td>
+                        <td>[% borrowdata.status %]</td>
+                        
+                      
+                        <td>[% IF borrowdata.status > 0 %] <p class="text-danger">borrowed</p> [% ELSE %]
+                        <p class="text-success">returned</p>[% END %]
+                        </td>
+                       <form method="post" action="/dashboad/userinfo/[% borrowdata.id %]">
+                         <td>
+                         [% IF borrowdata.status == 0 %]<button class="btn btn-success disabled" disabled>Already Returned</button> [% ELSE %]
+                         <button class="btn btn-danger"> Return</button>
+                          [% END %]
+                        </td>
+                       
+                       </form>
+                    </tr>
+                    [% END %]
+                </tbody>
+               
+            </table>
+
+
+        </main>
+    </div>
+</div>

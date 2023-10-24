@@ -25,7 +25,7 @@ __PACKAGE__->add_columns(
 		size => 20,
 	},
 	'status' => {
-		data_type => 'varchar',
+		data_type => 'tinyint',
 		size => 1,
 	},
 	"remaining_days" => {
@@ -35,5 +35,6 @@ __PACKAGE__->add_columns(
 );
 __PACKAGE__-> set_primary_key('id');
 __PACKAGE__-> has_many (users => "MyWeb::Schema::Result::User", "user_id");
+__PACKAGE__-> has_many(books=> "MyWeb::Schema::Result::Borrow", "book_id");
 
 1;

@@ -21,13 +21,16 @@ our $VERSION = '0.1';
 
 
 sub getCurrentDate {
+	my @months = qw( Jan Feb Mar Apr May Jun Jul Aug Sep Oct Nov Dec );
 	my ( $sec, $min,  $hour, $mday, $mon, $year, $wday, $yday, $isdst) = localtime();
 
 	my $month= $mon+1;
 	my $current_year= $year+1900;
 
 	my $current_date = "$current_year/$month/$mday";
-	return $current_date;
+	my $upload_time = "$mday $months[$mon]-$hour-$min-$sec-$current_year";
+	return ( $current_date, $upload_time);
+	# Mon Oct 23 11:59:00 2023
 }
 
 # Reusable date function (returned date)
@@ -123,7 +126,7 @@ post '/admin/login' => sub {
 		if($hashed_password eq $admin_exists->password){
 
 			# store the admin in session
-			session admin =>{email=> $admin_exists->email, name=> $admin_exists->username, role=>'Admin'};
+			session admin =>{email=> $admin_exists->email, name=> $admin_exists->username, id=>$admin_exists->{id}, role=>'Admin'};
 			redirect '/profile';
 		}
 
@@ -132,17 +135,61 @@ post '/admin/login' => sub {
 	app->session->write('flash_message', 'Wrong Credentials');
 	redirect '/admin/login';
 
-
 };
 
 #Admin dashboard route
 get '/dashboard'=> sub {
-	if (session 'admin') {
+	my $session_active = session('user') ? session('user') : session('admin');
+	# Check if $session_active is defined and not empty
+if (!$session_active) {
+    if (session('user')) {
+        # Redirect to the user login route
+        redirect '/login';
+    } elsif (session('admin')) {
+        # Redirect to the admin login route
+        redirect '/admin/login';
+    }
+}
+	if ($session_active) {
+		my @books = schema->resultset('Book')->all();
+		my @users = schema->resultset('User')->all();
+		my @borrows = schema->resultset('Borrow')->all();
 
-		template 'dashboard';
+		template 'dashboard', {books => \@books, users=> \@users, borrows=> \@borrows, data=>$session_active};
+
 
 	}else {
 		return redirect uri_for ('/admin/login');
+	}
+
+};
+get '/dashboard/userinfo' => sub{
+ my $session_active = session('user') ? session('user') : session('admin');
+  if ( $session_active ) {
+	my $borrow_info = schema->resultset('Borrow')->search(
+		{ user_id => $session_active->{id} },
+        { columns => [qw/id status/] }
+	);
+	 my @borrow_data = $borrow_info->all;
+	
+	# return $session_active->{borrow_status};
+	# return $sum_status;
+	template 'user/userinfo', {data=> $session_active, borrowdatas=> \@borrow_data };
+  }
+  else {
+		return redirect uri_for('/login');
+	}
+};
+
+post '/dashboad/userinfo/:id'=> sub {
+my $user_borrow = schema->resultset('Borrow')->find({id=> params->{id}});
+#  return $user_borrow->status;
+if ($user_borrow->status == 1) {
+		$user_borrow->update({ status => 0 });
+		return 'Book Returned';
+	}
+	else {
+		return 'Book not returned';
 	}
 
 };
@@ -151,6 +198,7 @@ get '/dashboard'=> sub {
 get '/dashboard/allusers' => sub {
 	if (session 'admin'){
 		my @allusers = schema->resultset('User')->all();
+		my @allborrows = schema->resultset('Borrow')->all();
 
 		# return \@allbooks
 
@@ -159,22 +207,26 @@ get '/dashboard/allusers' => sub {
 
 		# Clear the flash message
 		app->session->write('flash_message', undef);
-		template 'admin/allusers' => {users => \@allusers, flash_message=> $flash_message};
+		template 'admin/allusers' => {users => \@allusers, borrows=> \@allborrows, flash_message=> $flash_message};
 	}else {
 		return redirect uri_for('/admin/login');
 	}
 };
+
 # Approve single User by id
 post '/dashboard/allusers/:id'=> sub{
 	my $user_status = schema->resultset('User')->find({id=> params->{id}});
+
 	# return $user_status->status;
 
-	  if ($user_status->status == 0) {
-        $user_status->update({ status => 1 });
-        return 'Status updated';
-    } else {
-        return 'Status not updated';
-    }
+	if ($user_status->status == 0) {
+		$user_status->update({ status => 1 });
+		return 'Status updated';
+	}elsif ($user_status->status == 1) {
+		return 'User already approved';
+	}else {
+		return 'Status not updated';
+	}
 
 };
 
@@ -216,7 +268,7 @@ get '/dashboard/allbooks' => sub {
 get '/dashboard/addbook' => sub{
 
 	if (session 'admin'){
-
+     
 		# Check for a flash message in the stash
 		my $flash_message = app->session->read('flash_message');
 
@@ -233,20 +285,23 @@ get '/dashboard/addbook' => sub{
 post '/dashboard/addbook' => sub {
 	my $new_book = params();
 	my $upload = request->upload('file');
-	my $created_at = getCurrentDate();
+	 my ($current_date, $upload_time) = getCurrentDate();
 	my $updated_at = getReturnedDate();
 	my $image_url;
 
 	if ($upload) {
-		my $dir = path(config->{appdir}, 'uploads');
+		my $dir = path(config->{appdir}, 'public','uploads');
+
+		# /home/pabon/Library/uploads
+		# return $dir;
 		mkdir $dir if not -e $dir;
-		my $path = path($dir, $upload->basename);
+		my $date_now = $upload_time ."-". $upload->basename;
+		my $path = path($dir,$date_now);
 
 		# return $path;
 		$upload->link_to($path);
-		$image_url = "uploads/" . $upload->basename;
-
-		# return  $image_url;
+		$image_url = "uploads/" . $date_now;
+		# return $image_url;
 	}
 
 
@@ -258,7 +313,7 @@ post '/dashboard/addbook' => sub {
 			author => $new_book->{author},
 			description=> $new_book->{description},
 			image_url=> $image_url,
-			created_at=> $created_at,
+			created_at=> $current_date,
 			updated_at=> $updated_at,
 
 
@@ -372,23 +427,16 @@ get '/login' => sub {
 post '/login' => sub {
 	my $login_data = params();
 	my $user_exists = schema->resultset('User')->find({email => params->{email}});
-
-	# if ($user_exists->status=> {0}) {
-	# 	return 'user is inactive'
-	# }
-	# else {
-	# 	return 'active user'
-	# }
-	# return $user_exists->user_id;
+	# return $user_exists->borrow_status;
 
 	if($user_exists && $user_exists->status == 1){
 		my $salt = "saltstring";
 		my $hashed_password = sha1_hex($login_data->{password} . $salt);
-
+       
 		if($hashed_password eq $user_exists->password){
 
 			# store the user in session
-			session user =>{email=> $user_exists->email, name=> $user_exists->username, role=>'User'};
+			session user =>{email=> $user_exists->email, name=> $user_exists->username, id=>$user_exists->id, borrow_status=>$user_exists->borrow_status, role=>'User'};
 
 			# session('is_logged_in'=> 1);
 			redirect '/profile';
@@ -405,6 +453,7 @@ post '/login' => sub {
 
 get '/profile' => sub {
 	my $session_active = session('user') ? session('user') : session('admin');
+	# return $session_active->{id};
 	if (not $session_active) {
 		redirect '/login';
 	}
@@ -457,11 +506,13 @@ get '/logout' => sub {
 
 #show details of books
 get '/book/details/:id'=> sub {
-	my $db_host = $ENV{DB_HOST};
+	my $base_url = $ENV{DB_HOST};
 
-	# return $db_host;
+	#  return $borrows->borrow_id;
+	# return $borrows->{user_id};
 	my $book = schema->resultset('Book')->find(params->{id});
-	template 'user/bookdetails', { book => $book, db_host=> $db_host };
+
+	template 'user/bookdetails', { book => $book, db_host=> $base_url  };
 
 };
 
@@ -487,27 +538,31 @@ post '/book/borrow'=> sub{
 		# retrieving current user details from db
 		my $currentUser = schema->resultset('User')->find({email=> $authenticatedUserEmail});
 
-		# return $currentUser->id;
+		# return $currentUser->status;
 
 		# retrieving the book that user requested.
 		my $borrowBook = schema->resultset('Book')->find(params->{book_id});
 
 		# return $borrowBook->id;
 
-		my $currentDate = getCurrentDate();
+		my ($current_date) = getCurrentDate();
 		my $returnedDate = getReturnedDate();
 
 		my $newBorrowRecord = schema->resultset('Borrow')->create(
 			{
 				user_id=> $currentUser->id,
 				book_id=> $borrowBook->id,
-				issue_date=> $currentDate,
+				issue_date=> $current_date,
 				returned_date=> $returnedDate,
+
+				# status 0 means borrowed and 1 means returned.
+				status=> 1
 			}
 		);
 
-		app->session->write('flash_message', 'Borrowed Book Successfully');
-		redirect '/book/borrow/:id';
+		app->session->write('flash_message', 'Book borrowed successfully');
+
+		# redirect '/book/borrow/:id';
 
 
 	}else {
