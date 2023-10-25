@@ -5,6 +5,7 @@
         </div>
         [% END %]
     </div>
+    
     [% INCLUDE 'navbar.tt' %]
 <div class="container">
     <h1 class="text-center">Book Details</h1>

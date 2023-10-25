@@ -164,12 +164,6 @@ if (!$session_active) {
 
 };
 
-get '/dashboardnavbar' => sub{
-  my $session_active = session('user') ? session('user') : session('admin');
-  if ($session_active) {
-	template '/dashboardnavbar', {data=> $session_active};
-  }
-};
 
 get '/dashboard/userinfo' => sub{
  my $session_active = session('user') ? session('user') : session('admin');
