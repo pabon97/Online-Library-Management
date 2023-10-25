@@ -55,13 +55,17 @@
                         <td>[% data.name %]</td>
                         <td>[% data.email %]</td>
                         
-                        <td>[% IF borrowdata.status > 0 %] <p class="text-danger">borrowed</p> [% ELSE %]
-                        <p class="text-success">returned</p>[% END %]
+                        <td>[% IF borrowdata.status == 1 %] <p class="text-danger">borrowed</p> [% ELSIF borrowdata.status == 0  %]
+                        <p class="text-success">returned</p>[% ELSE %]
+                        <p class="text-info">Not borrwed any book</p>
+                        [% END %]
                         </td>
                        <form method="post" action="/dashboad/userinfo/[% borrowdata.id %]">
                          <td>
-                         [% IF borrowdata.status == 0 %]<button class="btn btn-success disabled" disabled>Already Returned</button> [% ELSE %]
+                         [% IF borrowdata.status == 0 %]<button class="btn btn-success disabled" disabled>Already Returned</button> [% ELSIF borrowdata.status == 1 %]
                          <button class="btn btn-danger"> Return</button>
+                         [% ELSE %]
+                         <button class="btn btn-info">Not borrowed</button>
                           [% END %]
                         </td>
                        

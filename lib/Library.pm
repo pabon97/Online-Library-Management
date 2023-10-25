@@ -553,7 +553,7 @@ post '/book/borrow'=> sub{
 				issue_date=> $current_date,
 				returned_date=> $returnedDate,
 
-				# status 0 means borrowed and 1 means returned.
+				# status 1 means borrowed and 0 means returned.
 				status=> 1
 			}
 		);
