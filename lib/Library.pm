@@ -56,6 +56,7 @@ get '/' => sub{
 };
 
 
+# Admin registration
 get '/admin/registration' => sub {
 
 	# Check for a flash message in the stash
@@ -136,6 +137,93 @@ post '/admin/login' => sub {
 	redirect '/admin/login';
 
 };
+
+# user registration page
+get '/registration' => sub {
+
+	# Check for a flash message in the stash
+	my $flash_message = app->session->read('flash_message');
+
+	# Clear the flash message
+	app->session->write('flash_message', undef);
+	template 'user/registration', {flash_message=> $flash_message};
+};
+
+# add new users to db
+post '/registration' => sub {
+	my $user_data = params();
+	my $user_exists = schema->resultset('User')->find({email => $user_data->{email}});
+	if($user_exists){
+
+		app->session->write('flash_message', 'User already exists');
+		redirect '/registration';
+	}
+
+	my $salt = "saltstring";
+	my $hashed_password = sha1_hex($user_data->{password} . $salt);
+	my $newUser = schema->resultset('User')->create(
+		{
+			username => $user_data->{name},
+			email => $user_data->{email},
+			password => $hashed_password,
+			status => 0,
+		}
+
+	);
+	app->session->write('flash_message', 'User Registered successfully');
+	redirect '/registration';
+
+};
+
+
+#show login page
+get '/login' => sub {
+	template 'user/login';
+};
+
+post '/login' => sub {
+	my $login_data = params();
+	my $user_exists = schema->resultset('User')->find({email => params->{email}});
+	# return $user_exists->borrow_status;
+
+	if($user_exists && $user_exists->status == 1){
+		my $salt = "saltstring";
+		my $hashed_password = sha1_hex($login_data->{password} . $salt);
+       
+		if($hashed_password eq $user_exists->password){
+
+			# store the user in session
+			session user =>{email=> $user_exists->email, name=> $user_exists->username, id=>$user_exists->id, role=>'User'};
+
+			# session('is_logged_in'=> 1);
+			redirect '/profile';
+		}
+
+
+	}
+	return "Wrong credentials or Inactive User";
+
+
+};
+
+#set session for logged in user
+# profile route
+get '/profile' => sub {
+	my $session_active = session('user') ? session('user') : session('admin');
+	# return $session_active->{id};
+	if (not $session_active) {
+		redirect '/login';
+	}
+	template 'profile' ,{data=> $session_active};
+};
+
+
+#Logout route
+get '/logout' => sub {
+	app-> destroy_session;
+	redirect '/';
+};
+
 
 #Admin dashboard route
 get '/dashboard'=> sub {
@@ -422,90 +510,6 @@ get '/dashboard/allbooks/:id'=> sub{
 };
 
 
-#show login page
-get '/login' => sub {
-	template 'user/login';
-};
-
-post '/login' => sub {
-	my $login_data = params();
-	my $user_exists = schema->resultset('User')->find({email => params->{email}});
-	# return $user_exists->borrow_status;
-
-	if($user_exists && $user_exists->status == 1){
-		my $salt = "saltstring";
-		my $hashed_password = sha1_hex($login_data->{password} . $salt);
-       
-		if($hashed_password eq $user_exists->password){
-
-			# store the user in session
-			session user =>{email=> $user_exists->email, name=> $user_exists->username, id=>$user_exists->id, role=>'User'};
-
-			# session('is_logged_in'=> 1);
-			redirect '/profile';
-		}
-
-
-	}
-	return "Wrong credentials or Inactive User";
-
-
-};
-
-#set session for logged in user
-
-get '/profile' => sub {
-	my $session_active = session('user') ? session('user') : session('admin');
-	# return $session_active->{id};
-	if (not $session_active) {
-		redirect '/login';
-	}
-	template 'profile' ,{data=> $session_active};
-};
-
-#show registration page
-get '/registration' => sub {
-
-	# Check for a flash message in the stash
-	my $flash_message = app->session->read('flash_message');
-
-	# Clear the flash message
-	app->session->write('flash_message', undef);
-	template 'user/registration', {flash_message=> $flash_message};
-};
-
-# add new users to db
-post '/registration' => sub {
-	my $user_data = params();
-	my $user_exists = schema->resultset('User')->find({email => $user_data->{email}});
-	if($user_exists){
-
-		app->session->write('flash_message', 'User already exists');
-		redirect '/registration';
-	}
-
-	my $salt = "saltstring";
-	my $hashed_password = sha1_hex($user_data->{password} . $salt);
-	my $newUser = schema->resultset('User')->create(
-		{
-			username => $user_data->{name},
-			email => $user_data->{email},
-			password => $hashed_password,
-			status => 0,
-		}
-
-	);
-	app->session->write('flash_message', 'User Registered successfully');
-	redirect '/registration';
-
-};
-
-#Logout route
-
-get '/logout' => sub {
-	app-> destroy_session;
-	redirect '/';
-};
 
 #show details of books
 get '/book/details/:id'=> sub {
