@@ -32,7 +32,7 @@
         <!-- Page Content -->
         <main class="col-md-9 ms-sm-auto col-lg-9 px-md-4">
             <!-- Content goes here -->
-            <h1 class="text-center my-4">[% data.name %] Info</h1>
+            <h1 class="text-center my-4">[% data.name %] borrow list</h1>
 
             <!-- Table -->
             <table class="table">
@@ -41,8 +41,8 @@
                         <th scope="col">id</th>
                         <th scope="col">name</th>
                         <th scope="col">email</th>
-                        <th scope="col">borrow status</th>
-                        <th scope="col">action</th>
+                        <th scope="col">status</th>
+                        <th scope="col">book</th>
                        
 
                     </tr>
@@ -54,9 +54,7 @@
                         <td>[% data.id %]</td>
                         <td>[% data.name %]</td>
                         <td>[% data.email %]</td>
-                        <td>[% borrowdata.status %]</td>
                         
-                      
                         <td>[% IF borrowdata.status > 0 %] <p class="text-danger">borrowed</p> [% ELSE %]
                         <p class="text-success">returned</p>[% END %]
                         </td>

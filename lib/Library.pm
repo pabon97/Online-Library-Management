@@ -49,9 +49,10 @@ sub getReturnedDate {
 
 #get all books
 get '/' => sub{
+	my $active_session = session('user') ? session('user') : session('admin');
 	my $result = schema->resultset('Book');
 	my @books = $result->search({}, { select => ['id','title', 'image_url', 'created_at', 'updated_at', 'author', 'description'] });
-	template 'index' => { books => \@books };
+	template 'index' => { books => \@books, data=>$active_session };
 };
 
 
@@ -116,8 +117,7 @@ post '/admin/login' => sub {
 
 	# return $admin_login->{email};
 	my $admin_exists = schema->resultset('Admin')->find({email => $admin_data ->{email}});
-
-	# return $user_exists->user_id;
+    # return $admin_exists->id;
 
 	if($admin_exists){
 		my $salt = "newadminsalt";
@@ -126,7 +126,7 @@ post '/admin/login' => sub {
 		if($hashed_password eq $admin_exists->password){
 
 			# store the admin in session
-			session admin =>{email=> $admin_exists->email, name=> $admin_exists->username, id=>$admin_exists->{id}, role=>'Admin'};
+			session admin =>{email=> $admin_exists->email, name=> $admin_exists->username, id=>$admin_exists->id, role=>'Admin'};
 			redirect '/profile';
 		}
 
@@ -348,8 +348,6 @@ post '/dashboard/updatebook/:id' => sub {
 	my $book_info = schema->resultset('Book')->find({id=> params->{id}});
 
 	#return $book_info;
-	my $createdTime = getCurrentDate();
-	my $returnedTime = getReturnedDate();
 
 	# return $book_info->{id}
 	my $upload = request->upload('file');
@@ -376,7 +374,7 @@ post '/dashboard/updatebook/:id' => sub {
 
 		# Only update the 'image_url' column if a new image was uploaded
 		my $file = $image_url || $book_info->image_url;
-		my $createdTime = getCurrentDate();
+		my ($current_date) = getCurrentDate();
 		my $returnedTime = getReturnedDate();
 
 		# Update the book details
@@ -386,7 +384,7 @@ post '/dashboard/updatebook/:id' => sub {
 				author => $author,
 				description => $description,
 				image_url => $file,
-				created_at => $createdTime,
+				created_at => $current_date,
 				updated_at => $returnedTime,
 			}
 		);
@@ -436,7 +434,7 @@ post '/login' => sub {
 		if($hashed_password eq $user_exists->password){
 
 			# store the user in session
-			session user =>{email=> $user_exists->email, name=> $user_exists->username, id=>$user_exists->id, borrow_status=>$user_exists->borrow_status, role=>'User'};
+			session user =>{email=> $user_exists->email, name=> $user_exists->username, id=>$user_exists->id, role=>'User'};
 
 			# session('is_logged_in'=> 1);
 			redirect '/profile';

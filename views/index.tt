@@ -1,22 +1,29 @@
 <nav class="navbar navbar-expand-sm bg-primary navbar-dark">
-  <div class="container-fluid flex justify-between">
-    <a class="navbar-brand" href="/">Library management System</a>
-    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNavAltMarkup"
-      aria-controls="navbarNavAltMarkup" aria-expanded="false" aria-label="Toggle navigation">
-      <span class="navbar-toggler-icon"></span>
-    </button>
-    <div class="collapse navbar-collapse flex justify-content-between" id="navbarNavAltMarkup">
-      <div class="navbar-nav">
-        <a class="nav-link active" aria-current="page" href="/">Home</a>
-        <a class="nav-link active" href="/registration">Registration</a>
-         <a class="nav-link active" href="/profile">Profile</a>
-         <a class="nav-link active" href="/dashboard">Dashboard</a>
-         
-      <div class="mt-3">
-        <p class="text-white">[% user.user_name %]</p>
-      </div>
+    <div class="container-fluid flex justify-between">
+        <a class="navbar-brand" href="/">Library management System</a>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNavAltMarkup"
+            aria-controls="navbarNavAltMarkup" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse flex justify-content-between" id="navbarNavAltMarkup">
+            <div class="navbar-nav">
+                <a class="nav-link active" aria-current="page" href="/">Home</a>
+                  <a class="nav-link active" aria-current="page" href="/dashboard">Dashboard</a>
+               <div>
+               [% IF data.name %]
+                <a href="/logout" class="nav-link active">Logout</a>
+                 [% ELSE %]
+                  <a href="/login" class="nav-link active">Login</a>
+                  [% END %]
+               </div>
+
+            </div>
+            <div class="mt-3">
+                <p class="text-white">[% data.name %]</p>
+            </div>
+
+        </div>
     </div>
-  </div>
 </nav>
 
 <script type="text/javascript">

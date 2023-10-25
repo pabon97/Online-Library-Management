@@ -60,13 +60,13 @@
              <table class="table">
                  <thead>
                      <tr>
-                         <th scope="col">id</th>
-                         <th scope="col">name</th>
-                         <th scope="col">email</th>
-                          <th scope="col">active status</th>
-                         <th scope="col">borrow status</th>
-                        <th scope="col">manage status</th>
-                        <th scope="col">remove</th>
+                         <th scope="col">Id</th>
+                         <th scope="col">Name</th>
+                         <th scope="col">Email</th>
+                          <th scope="col">User status</th>
+                         <th scope="col">Borrow status</th>
+                        <th scope="col">Active</th>
+                        <th scope="col">Remove</th>
 
                      </tr>
                  </thead>
@@ -82,13 +82,16 @@
                         
                          <td>
                            <form method="post" action="/dashboard/allusers/[% user.id %]">
-                         <button type="submit" class="btn btn-info">Active</button>
-                        
+                           [% IF user.status == 1 %]
+                         <button type="submit" class="btn btn-info" disabled>Activated</button>
+                         [% ELSE %]
+                         <button type="submit" class="btn btn-success">Active</button>
+                        [% END %]
                         </form>
                          </td>
                          <td>
                        <a href="/dashboard/allusers/[% user.id %]">
-                         <button type="button" class="btn btn-danger">Remove</button>
+                         <button type="button" class="btn btn-danger">Remove User</button>
                        </a>
                          </td>
                      </tr>
