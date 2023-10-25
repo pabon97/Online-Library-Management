@@ -163,6 +163,14 @@ if (!$session_active) {
 	}
 
 };
+
+get '/dashboardnavbar' => sub{
+  my $session_active = session('user') ? session('user') : session('admin');
+  if ($session_active) {
+	template '/dashboardnavbar', {data=> $session_active};
+  }
+};
+
 get '/dashboard/userinfo' => sub{
  my $session_active = session('user') ? session('user') : session('admin');
   if ( $session_active ) {
@@ -196,6 +204,7 @@ if ($user_borrow->status == 1) {
 
 # Show all users in admin table
 get '/dashboard/allusers' => sub {
+	my $session_active = session('user') ? session('user') : session('admin');
 	if (session 'admin'){
 		my @allusers = schema->resultset('User')->all();
 		my @allborrows = schema->resultset('Borrow')->all();
@@ -207,7 +216,7 @@ get '/dashboard/allusers' => sub {
 
 		# Clear the flash message
 		app->session->write('flash_message', undef);
-		template 'admin/allusers' => {users => \@allusers, borrows=> \@allborrows, flash_message=> $flash_message};
+		template 'admin/allusers' => {users => \@allusers, borrows=> \@allborrows, flash_message=> $flash_message, data=>$session_active};
 	}else {
 		return redirect uri_for('/admin/login');
 	}
@@ -247,6 +256,7 @@ get '/dashboard/allusers/:id'=> sub{
 # Admin show all books
 
 get '/dashboard/allbooks' => sub {
+	my $session_active = session('user') ? session('user') : session('admin');
 	if (session 'admin'){
 		my @allbooks = schema->resultset('Book')->all();
 
@@ -257,7 +267,7 @@ get '/dashboard/allbooks' => sub {
 
 		# Clear the flash message
 		app->session->write('flash_message', undef);
-		template 'admin/allbooks' => {books => \@allbooks, flash_message=> $flash_message};
+		template 'admin/allbooks' => {books => \@allbooks, flash_message=> $flash_message, data=>$session_active};
 	}else {
 		return redirect uri_for('/admin/login');
 	}
@@ -266,6 +276,7 @@ get '/dashboard/allbooks' => sub {
 
 # Admin add book
 get '/dashboard/addbook' => sub{
+	my $session_active = session('user') ? session('user') : session('admin');
 
 	if (session 'admin'){
      
@@ -274,7 +285,7 @@ get '/dashboard/addbook' => sub{
 
 		# Clear the flash message
 		app->session->write('flash_message', undef);
-		template 'admin/addbook', {flash_message => $flash_message};
+		template 'admin/addbook', {flash_message => $flash_message, data=> $session_active};
 	}else {
 		return redirect uri_for ('/admin/login');
 	}
@@ -505,12 +516,10 @@ get '/logout' => sub {
 #show details of books
 get '/book/details/:id'=> sub {
 	my $base_url = $ENV{DB_HOST};
-
-	#  return $borrows->borrow_id;
-	# return $borrows->{user_id};
 	my $book = schema->resultset('Book')->find(params->{id});
-
 	template 'user/bookdetails', { book => $book, db_host=> $base_url  };
+
+	
 
 };
 
