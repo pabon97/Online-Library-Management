@@ -59,7 +59,6 @@
                      </tr>
                  </thead>
                  <tbody>
-                  [% FOREACH borrow IN borrows %]
                    [% FOREACH user IN users %]
                      <tr>
                          <th scope="row">[% user.id %]</th>
@@ -88,7 +87,6 @@
                          </td>
                      </tr>
                       [% END %]
-                           [% END %]
 
                  </tbody>
              </table>
