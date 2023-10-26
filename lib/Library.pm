@@ -68,6 +68,35 @@ sub registration_user_or_admin {
    redirect $redirect_route;
 };
 
+# Reusable Login function for user & admin
+sub login_user_or_admin {
+	# login_data => form data, user_type=> admin or user which is from session $salt => hashpassword
+  my ($login_data, $user_type, $resultset,  $salt) = @_;
+   my $user_exists = schema->resultset($resultset)->find({email=> $login_data->{email}});
+#   return $user_exists->email;
+   if($user_exists){
+	my $newsalt = $salt;
+	my $hashed_password = sha1_hex($login_data->{password} . $newsalt);
+	# return "$hashed_password login pass: $user_exists->password";
+	# return $user_exists->password;
+	if ($hashed_password eq $user_exists->password) {
+		 if ($user_type eq 'user' && $user_exists->status == 0) {
+                return "Inactive $user_type";
+            }
+		session $user_type => {
+			id=> $user_exists->{id},
+			email=> $user_exists->{email},
+			name=> $user_exists->{username},
+			role=> ucfirst($user_type),
+		};
+		redirect '/profile';
+	}
+   }
+    return 'Wrong Credentials'
+  
+  };
+
+
 
 #get all books
 get '/' => sub{
@@ -109,12 +138,11 @@ get '/admin/login'=> sub {
 
 post '/admin/login' => sub {
 	my $admin_data = params();
+	# my $salt = "saltstring";
+    # return login_user_or_admin($admin_data,'admin','Admin',$salt);
 
-	# return $admin_login->{email};
 	my $admin_exists = schema->resultset('Admin')->find({email => $admin_data ->{email}});
-
 	# return $admin_exists->id;
-
 	if($admin_exists){
 		my $salt = "newadminsalt";
 		my $hashed_password = sha1_hex($admin_data ->{password} . $salt);
@@ -159,6 +187,9 @@ get '/login' => sub {
 
 post '/login' => sub {
 	my $login_data = params();
+	# my $salt = 'saltstring';
+	# return login_user_or_admin($login_data, 'user', "User", $salt);
+
 	my $user_exists = schema->resultset('User')->find({email => params->{email}});
 
 	# return $user_exists->borrow_status;
@@ -223,8 +254,10 @@ get '/dashboard'=> sub {
 		my @books = schema->resultset('Book')->all();
 		my @users = schema->resultset('User')->all();
 		my @borrows = schema->resultset('Borrow')->all();
+		my @total_returned = schema->resultset('Borrow')->search({status=>0});
+		# return \@total_returned;
 
-		template 'dashboard', {books => \@books, users=> \@users, borrows=> \@borrows, data=>$session_active};
+		template 'dashboard', {books => \@books, users=> \@users, borrows=> \@borrows, data=>$session_active, totalreturned=> \@total_returned};
 
 
 	}else {
@@ -235,7 +268,7 @@ get '/dashboard'=> sub {
 
 
 get '/dashboard/userinfo' => sub{
-	my $session_active = session('user') ? session('user') : session('admin');
+	my $session_active = session('user');
 	if ( $session_active ) {
 		my $borrow_info = schema->resultset('Borrow')->search({ user_id => $session_active->{id} },{ columns => [qw/id status/] });
 		my @borrow_data = $borrow_info->all;
