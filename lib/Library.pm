@@ -5,6 +5,11 @@ use Dancer2::Plugin::DBIC;
 use Digest::SHA qw(sha1_hex);
 use Dancer2::Plugin::Database;
 use Dancer2::Core::Request::Upload;
+# use File::Type;
+use File::Slurp;
+use GD;
+# use File::Type;
+# use Image::Scale;
 
 # use  Dancer2::Session::Simple;
 # use Dancer2::Plugin::FlashNote;
@@ -250,14 +255,25 @@ get '/dashboard'=> sub {
 			redirect '/admin/login';
 		}
 	}
+	# return $session_active->{id};
 	if ($session_active) {
 		my @books = schema->resultset('Book')->all();
 		my @users = schema->resultset('User')->all();
 		my @borrows = schema->resultset('Borrow')->all();
+		# for admin dashboard admin can see total returned books
 		my @total_returned = schema->resultset('Borrow')->search({status=>0});
+		#  user dashboard user total borrowed book
+		 my @user_borrowed = schema->resultset('Borrow')->search({
+			status=> {'>'=> 0},
+			user_id=> $session_active->{id},
+		 });
+		 my @user_returned = schema->resultset('Borrow')->search({
+			status=> {'<'=> 1},
+			user_id=> $session_active->{id},
+		 });
 		# return \@total_returned;
 
-		template 'dashboard', {books => \@books, users=> \@users, borrows=> \@borrows, data=>$session_active, totalreturned=> \@total_returned};
+		template 'dashboard', {books => \@books, users=> \@users, borrows=> \@borrows, data=>$session_active, totalreturned=> \@total_returned, userborrowed=> \@user_borrowed, userreturned=> \@user_returned};
 
 
 	}else {
@@ -296,7 +312,7 @@ post '/dashboad/userinfo/:id'=> sub {
 
 # Show all users in admin table
 get '/dashboard/allusers' => sub {
-	my $session_active = session('user') ? session('user') : session('admin');
+	my $session_active = session('admin');
 	if (session 'admin'){
 		my @allusers = schema->resultset('User')->all();
 		my @allborrows = schema->resultset('Borrow')->all();
@@ -348,7 +364,7 @@ get '/dashboard/allusers/:id'=> sub{
 # Admin show all books
 
 get '/dashboard/allbooks' => sub {
-	my $session_active = session('user') ? session('user') : session('admin');
+	my $session_active = session('admin');
 	if (session 'admin'){
 		my @allbooks = schema->resultset('Book')->all();
 
@@ -368,10 +384,9 @@ get '/dashboard/allbooks' => sub {
 
 # Admin add book
 get '/dashboard/addbook' => sub{
-	my $session_active = session('user') ? session('user') : session('admin');
+	my $session_active = session('admin');
 
 	if (session 'admin'){
-
 		# Check for a flash message in the stash
 		my $flash_message = app->session->read('flash_message');
 
@@ -392,18 +407,43 @@ post '/dashboard/addbook' => sub {
 	my $updated_at = getReturnedDate();
 	my $image_url;
 
+	if (!$upload) {
+		return 'No file uploaded';
+	}
+
+	my $file_extension = lc($upload->basename);
+	$file_extension =~ s/.*\.//;
+	# return $file_extension;
+
+	 if ($file_extension !~ /^(jpg|jpeg|png)$/) {
+        return "File type not allowed. Only .jpg, .jpeg, and .png files are accepted.";
+    }
+
+	my $max_file_size = 2 * 1024 * 1024; #2 MB
+	# return $upload->size;
+	if($upload->size > $max_file_size){
+      my $content = $upload->content;
+	#   return length($content);
+	  if(length($content) > $max_file_size){
+		$content = substr($content, 0, $max_file_size);
+        $upload->content($content);
+	  }
+	#   return length($content);
+
+	}
+	
 	if ($upload) {
 		my $dir = path(config->{appdir}, 'public','uploads');
 
 		# /home/pabon/Library/uploads
 		# return $dir;
 		mkdir $dir if not -e $dir;
-		my $date_now = $upload_time ."-". $upload->basename;
-		my $path = path($dir,$date_now);
-
+		my $file_name = $upload_time ."-". $upload->basename;
+		my $path = path($dir,$file_name);
+        # return $upload->basename;
 		# return $path;
 		$upload->link_to($path);
-		$image_url = "uploads/" . $date_now;
+		$image_url = "uploads/" . $file_name;
 
 		# return $image_url;
 	}
@@ -446,14 +486,9 @@ get '/dashboard/updatebook/:id' => sub {
 
 # Admin update single book
 post '/dashboard/updatebook/:id' => sub {
-
-	# my $book_id = route_parameters->get("id");
-	# return $book_id;
 	my $book_info = schema->resultset('Book')->find({id=> params->{id}});
-
 	#return $book_info;
 
-	# return $book_info->{id}
 	my $upload = request->upload('file');
 	my $image_url;
 	if ($upload) {
@@ -506,8 +541,6 @@ post '/dashboard/updatebook/:id' => sub {
 
 get '/dashboard/allbooks/:id'=> sub{
 
-	# my $delete_book = params();
-	# return $delete_book->{id}
 	my $item = schema->resultset('Book')->find({id=> params->{id}});
 
 	# return $item;
@@ -568,7 +601,6 @@ post '/book/borrow'=> sub{
 				book_id=> $borrowBook->id,
 				issue_date=> $current_date,
 				returned_date=> $returnedDate,
-
 				# status 1 means borrowed and 0 means returned.
 				status=> 1
 			}
