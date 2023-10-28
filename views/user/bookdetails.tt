@@ -1,29 +1,39 @@
 <div id="flash_message">
-        [% IF flash_message %]
-        <div class="alert alert-success">
-            [% flash_message %]
-        </div>
-        [% END %]
+    [% IF flash_message %]
+    <div class="alert alert-success">
+        [% flash_message %]
     </div>
-    
-    [% INCLUDE 'shared/navbar.tt' %]
+    [% END %]
+</div>
+
+[% INCLUDE 'shared/navbar.tt' %]
 <div class="container">
     <h1 class="text-center">Book Details</h1>
     <div class="d-flex justify-content-center align-items-center my-4">
         <div class="mr-3">
-            <img width="350px" height="350px" src="[% db_host %][% book.image_url %]"class="card-img-top" alt="...">
+            <img width="350px" height="350px" src="[% db_host %][% book.image_url %]" class="card-img-top" alt="...">
         </div>
         <div class="ml-3">
             <h2>Title: [% book.title %]</h2>
             <p>Author: [% book.author %]</p>
             <p>Description: [% book.description %]</p>
+            <!--  <h1>status: [% status %]</h1> -->
+            <!-- <h1>UserId: [% data.id %]</h1>
+              <h1>BookId: [% book.id %]</h1> -->
+
             <form method="post" action="/book/borrow">
                 <input name="book_id" type="text" class="d-none" value="[% book.id %]">
-                <button type="submit" class="btn btn-primary">
-                    Borrow
+                [% IF status == 'Already borrowed' %]
+                <button type="submit" class="btn btn-primary" disabled>
+                    Already borrowed
                 </button>
+                [% ELSE %]
+                <button type="submit" class="btn btn-primary">
+                    [% status %]
+                </button>
+                [% END %]
             </form>
-           
+
         </div>
     </div>
 </div>
