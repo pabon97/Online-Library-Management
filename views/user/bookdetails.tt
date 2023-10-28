@@ -6,7 +6,7 @@
         [% END %]
     </div>
     
-    [% INCLUDE 'navbar.tt' %]
+    [% INCLUDE 'shared/navbar.tt' %]
 <div class="container">
     <h1 class="text-center">Book Details</h1>
     <div class="d-flex justify-content-center align-items-center my-4">

@@ -6,7 +6,7 @@
         [% END %]
     </div>
 
-[% INCLUDE 'dashboardnavbar.tt' %]
+[% INCLUDE 'shared/dashboardnavbar.tt' %]
 
     <!-- Sidebar -->
     <div class="container-fluid">

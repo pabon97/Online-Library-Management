@@ -6,7 +6,7 @@
         [% END %]
     </div>
     
- [% INCLUDE 'dashboardnavbar.tt' %]
+ [% INCLUDE 'shared/dashboardnavbar.tt' %]
  <!-- Sidebar -->
  <div class="container-fluid">
      <div class="row">
@@ -62,9 +62,11 @@
                          <td>[% book.author %]</td>
                          <td>[% book.description %]</td>
                          <td>
+                         <!-- Admin update a book -->
                         <a href="/dashboard/updatebook/[% book.id %]">
                          <button type="button" class="btn btn-info">Update</button>
                         </a>
+                        <!-- Admin delete a book   -->
                        <a href="/dashboard/allbooks/[% book.id %]">
                          <button type="button" class="btn btn-danger">Delete</button>
                        </a>

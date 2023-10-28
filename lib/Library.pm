@@ -556,9 +556,10 @@ get '/dashboard/allbooks/:id'=> sub{
 
 #show details of books
 get '/book/details/:id'=> sub {
+	my $session_active = session('user');
 	my $base_url = $ENV{DB_HOST};
 	my $book = schema->resultset('Book')->find(params->{id});
-	template 'user/bookdetails', { book => $book, db_host=> $base_url  };
+	template 'user/bookdetails', { book => $book, db_host=> $base_url, data=>$session_active  };
 
 
 };
@@ -581,6 +582,7 @@ post '/book/borrow'=> sub{
 
 		# accessing the email of current authenticated user from session
 		my $authenticatedUserEmail = session('user')->{email};
+		# return $authenticatedUserEmail->{id};
 
 		# retrieving current user details from db
 		my $currentUser = schema->resultset('User')->find({email=> $authenticatedUserEmail});
@@ -589,7 +591,15 @@ post '/book/borrow'=> sub{
 
 		# retrieving the book that user requested.
 		my $borrowBook = schema->resultset('Book')->find(params->{book_id});
-
+		# check the user has already borrowed the book or not
+		# my $existing_borrow = schema->resultset('Borrow')->find({
+		# 	user_id => $authenticatedUserEmail->{id},
+		# 	book_id => params->{book_id},
+		# });
+		# return $existing_borrow->book_id;
+        # if ($existing_borrow) {
+        #return "You have already borrowed this book.";
+        # }
 		# return $borrowBook->id;
 
 		my ($current_date) = getCurrentDate();

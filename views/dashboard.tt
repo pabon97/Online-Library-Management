@@ -1,4 +1,4 @@
-[% INCLUDE 'dashboardnavbar.tt' %]
+[% INCLUDE 'shared/dashboardnavbar.tt' %]
 
 <!-- Sidebar -->
 <div class="container-fluid">
@@ -48,7 +48,7 @@
         <!-- Page Content -->
         <main class="col-md-9 ms-sm-auto col-lg-9 px-md-4">
             <!-- Content goes here -->
-            <h1 class="text-center">Welcome to [% data.role %] Dashboard</h1>
+            <h1 class="text-center my-4">Welcome to [% data.role %] Dashboard</h1>
 
             <!-- Beautiful Cards -->
             [% IF data.role == 'Admin' %]
