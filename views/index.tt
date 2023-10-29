@@ -11,6 +11,7 @@
 
 <div class="container">
   <h1 class="text-center">Book List</h1>
+  <p class="text-center">Data Source: [% source %]</p>
   <div class="row my-5">
     [% IF books.0.defined %]
     [% FOREACH book IN books %]

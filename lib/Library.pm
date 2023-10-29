@@ -5,6 +5,7 @@ use Dancer2::Plugin::DBIC;
 use Digest::SHA qw(sha1_hex);
 use Dancer2::Plugin::Database;
 use Dancer2::Core::Request::Upload;
+use CHI;
 
 # use File::Type;
 use File::Slurp;
@@ -24,9 +25,14 @@ use MyWeb::Schema::Result::Borrow;
 
 our $VERSION = '0.1';
 
+# configure cache 
+my $cache = CHI->new(
+    driver     => 'Memory',   # Use the same driver you configured
+    global     => 1,          # Make it a global cache
+);
+
+
 # Reusable date function (current date)
-
-
 sub getCurrentDate {
 	my @months = qw( Jan Feb Mar Apr May Jun Jul Aug Sep Oct Nov Dec );
 	my ( $sec, $min,  $hour, $mday, $mon, $year, $wday, $yday, $isdst) = localtime();
@@ -111,9 +117,23 @@ sub login_user_or_admin {
 #get all books
 get '/' => sub{
 	my $active_session = session('user') ? session('user') : session('admin');
+	my $key = 'book_data';
+	my $books = $cache->get($key);
+	my $data_source = 'cache';
+	if ($books) {
+		return template 'index' => { books => $books, data => $active_session, source=> $data_source};
+	}
+	else {
 	my $result = schema->resultset('Book');
 	my @books = $result->search({}, { select => ['id','title', 'image_url', 'created_at', 'updated_at', 'author', 'description'] });
-	template 'index' => { books => \@books, data=>$active_session };
+
+	# cache the book data for 10 mins(600 s)
+	 $cache->set($key, \@books, '600s');
+	 $data_source = "Database"; # Data was fetched from the database
+	 return template 'index' => { books => \@books, data=>$active_session, source=> $data_source };
+	}
+	
+	
 };
 
 
@@ -269,11 +289,11 @@ get '/dashboard'=> sub {
 		my @books = schema->resultset('Book')->all();
 		my @users = schema->resultset('User')->all();
 		my @borrows = schema->resultset('Borrow')->all();
+       
+		# for user dashboard user can see total returned books for users
+		my @total_returned_user = schema->resultset('Borrow')->search({status=>0});
 
-		# for admin dashboard admin can see total returned books
-		my @total_returned = schema->resultset('Borrow')->search({status=>0});
-
-		#  user dashboard user total borrowed book
+		#  user dashboard user total borrowed book && admin can see total borrowed books of users
 		my @user_borrowed = schema->resultset('Borrow')->search(
 			{
 				status=> {'>'=> 0},
@@ -289,7 +309,7 @@ get '/dashboard'=> sub {
 
 		# return \@total_returned;
 
-		template 'dashboard', {books => \@books, users=> \@users, borrows=> \@borrows, data=>$session_active, totalreturned=> \@total_returned, userborrowed=> \@user_borrowed, userreturned=> \@user_returned};
+		template 'dashboard', {books => \@books, users=> \@users, borrows=> \@borrows, data=>$session_active, totalreturned=> \@total_returned_user, userborrowed=> \@user_borrowed, userreturned=> \@user_returned};
 
 
 	}else {
@@ -484,6 +504,8 @@ post '/dashboard/addbook' => sub {
 
 		}
 	);
+	my $key = 'book_data';
+	$cache->remove($key);
 	app->session->write('flash_message', 'Book added successfully');
 	redirect '/dashboard/addbook';
 };
@@ -491,7 +513,8 @@ post '/dashboard/addbook' => sub {
 # Admin Update book
 
 get '/dashboard/updatebook/:id' => sub {
-	if (session 'admin'){
+	my $active_session = session('admin');
+	if ($active_session ){
 		my $bookInfo = schema->resultset('Book')->find({id=> params->{id}});
 
 		# Check for a flash message in the stash
@@ -499,7 +522,7 @@ get '/dashboard/updatebook/:id' => sub {
 
 		# Clear the flash message
 		app->session->write('flash_message', undef);
-		template 'admin/updatebook', {bookInfo => $bookInfo, flash_message=> $flash_message};
+		template 'admin/updatebook', {bookInfo => $bookInfo, flash_message=> $flash_message, data=> $active_session};
 	}else {
 		return redirect uri_for('/admin/login');
 	}
@@ -536,7 +559,7 @@ post '/dashboard/updatebook/:id' => sub {
 		# Only update the 'image_url' column if a new image was uploaded
 		my $file = $image_url || $book_info->image_url;
 		my ($current_date) = getCurrentDate();
-		my $returnedTime = getReturnedDate();
+		# my $updated_time = getCurrentDate();
 
 		# Update the book details
 		$book_info->update(
@@ -546,9 +569,11 @@ post '/dashboard/updatebook/:id' => sub {
 				description => $description,
 				image_url => $file,
 				created_at => $current_date,
-				updated_at => $returnedTime,
+				updated_at => $current_date,
 			}
 		);
+		my $key = 'book_data';
+		$cache->remove($key);
 		app->session->write('flash_message', 'Book Updated successfully');
 	} else {
 		app->session->write('flash_message', 'Failed to update');
@@ -568,6 +593,8 @@ get '/dashboard/allbooks/:id'=> sub{
 	# return $item;
 	if ($item) {
 		$item->delete;  # Delete the book if it exists
+		my $key = 'book_data';
+		$cache->remove($key);
 		app->session->write('flash_message', 'Book deleted successfully');
 	} else {
 		app->session->write('flash_message', 'Book not found');  # Set an error message

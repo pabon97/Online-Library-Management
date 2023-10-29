@@ -1,0 +1,14 @@
+/home/pabon/Library/local/bin/pod_cover
+/home/pabon/Library/local/lib/perl5/Pod/Coverage.pm
+/home/pabon/Library/local/lib/perl5/Pod/Coverage/CountParents.pm
+/home/pabon/Library/local/lib/perl5/Pod/Coverage/ExportOnly.pm
+/home/pabon/Library/local/lib/perl5/Pod/Coverage/Overloader.pm
+/usr/local/bin/pod_cover
+/usr/local/man/man3/Pod::Coverage.3pm
+/usr/local/man/man3/Pod::Coverage::CountParents.3pm
+/usr/local/man/man3/Pod::Coverage::ExportOnly.3pm
+/usr/local/man/man3/Pod::Coverage::Overloader.3pm
+/usr/local/share/perl/5.34.0/Pod/Coverage.pm
+/usr/local/share/perl/5.34.0/Pod/Coverage/CountParents.pm
+/usr/local/share/perl/5.34.0/Pod/Coverage/ExportOnly.pm
+/usr/local/share/perl/5.34.0/Pod/Coverage/Overloader.pm

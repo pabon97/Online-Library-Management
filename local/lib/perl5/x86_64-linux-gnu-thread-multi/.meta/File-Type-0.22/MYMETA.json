@@ -1,0 +1,37 @@
+{
+   "abstract" : "unknown",
+   "author" : [
+      "unknown"
+   ],
+   "dynamic_config" : 0,
+   "generated_by" : "Module::Build version 0.4234",
+   "license" : [
+      "perl_5"
+   ],
+   "meta-spec" : {
+      "url" : "http://search.cpan.org/perldoc?CPAN::Meta::Spec",
+      "version" : 2
+   },
+   "name" : "File-Type",
+   "prereqs" : {
+      "runtime" : {
+         "requires" : {
+            "IO::File" : 0.01,
+            "Test::More" : 0.01
+         }
+      }
+   },
+   "provides" : {
+      "File::Type" : {
+         "file" : "lib/File/Type.pm",
+         "version" : "0.22"
+      },
+      "File::Type::Builder" : {
+         "file" : "lib/File/Type/Builder.pm",
+         "version" : "0.11"
+      }
+   },
+   "release_status" : "stable",
+   "version" : "0.22",
+   "x_serialization_backend" : "JSON::PP version 4.06"
+}

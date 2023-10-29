@@ -12,6 +12,11 @@
          <nav id="sidebar" class="col-md-3 col-lg-2 d-md-block bg-light sidebar">
              <div class="position-sticky">
                  <ul class="nav flex-column my-3">
+                 <li class="nav-item">
+                        <a class="nav-link active" href="/">
+                            Home
+                        </a>
+                    </li>
                      <li class="nav-item">
                          <a class="nav-link active" href="/dashboard/addbook">
                              Add Book

@@ -1,0 +1,60 @@
+{
+   "abstract" : "Dancer2 FormValidator extension for checking field present in table row using DBIC.",
+   "author" : [
+      "Alexander Panteleev <alexpan@cpan.org>"
+   ],
+   "dynamic_config" : 0,
+   "generated_by" : "Dist::Zilla version 6.024, CPAN::Meta::Converter version 2.150010",
+   "license" : [
+      "perl_5"
+   ],
+   "meta-spec" : {
+      "url" : "http://search.cpan.org/perldoc?CPAN::Meta::Spec",
+      "version" : 2
+   },
+   "name" : "Dancer2-Plugin-FormValidator-Extension-DBIC",
+   "prereqs" : {
+      "build" : {
+         "requires" : {
+            "ExtUtils::MakeMaker" : "0"
+         }
+      },
+      "configure" : {
+         "requires" : {
+            "ExtUtils::MakeMaker" : "0"
+         }
+      },
+      "runtime" : {
+         "requires" : {
+            "Dancer2::Plugin::DBIC" : "0",
+            "Dancer2::Plugin::FormValidator::Role::Extension" : "0",
+            "Dancer2::Plugin::FormValidator::Role::Validator" : "0",
+            "Moo" : "0",
+            "namespace::clean" : "0",
+            "strict" : "0",
+            "utf8" : "0",
+            "warnings" : "0"
+         }
+      },
+      "test" : {
+         "requires" : {
+            "Test::More" : "0",
+            "Test::Pod" : "0"
+         }
+      }
+   },
+   "release_status" : "stable",
+   "resources" : {
+      "bugtracker" : {
+         "web" : "https://github.com/AlexP007/dancer2-plugin-formvalidator-extension-dbic/issues"
+      },
+      "homepage" : "https://metacpan.org/pod/Dancer2::Plugin::FormValidator::Extension::DBIC",
+      "repository" : {
+         "url" : "https://github.com/AlexP007/dancer2-plugin-formvalidator-extension-dbic.git"
+      }
+   },
+   "version" : "1.01",
+   "x_generated_by_perl" : "v5.34.0",
+   "x_serialization_backend" : "JSON::PP version 4.06",
+   "x_spdx_expression" : "Artistic-1.0-Perl OR GPL-1.0-or-later"
+}

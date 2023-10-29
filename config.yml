@@ -61,10 +61,19 @@ template: "template_toolkit"
 #      is_secure: 1
 #      is_http_only: 1
 plugins:
+  CHI:
+    driver: Memory
+    global: 1 
   DBIC:
     default:
       dsn: "dbi:mysql:database=library;host=0.0.0.0:3306"
       schema_class: "MyWeb::Schema"
       user: "root"
       password: "root"
+
+
+# plugins:
+#   CHI:
+#     driver: Memory
+#     global: 1     
 

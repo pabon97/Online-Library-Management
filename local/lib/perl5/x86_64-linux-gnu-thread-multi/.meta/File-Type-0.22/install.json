@@ -1,0 +1,1 @@
+{"dist":"File-Type-0.22","pathname":"P/PM/PMISON/File-Type-0.22.tar.gz","version":"0.22","target":"File::Type","name":"File::Type","provides":{"File::Type::Builder":{"file":"lib/File/Type/Builder.pm","version":"0.11"},"File::Type":{"file":"lib/File/Type.pm","version":"0.22"}}}
