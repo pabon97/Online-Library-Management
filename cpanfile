@@ -10,6 +10,7 @@ requires "Dotenv";
 requires "File::Type";
 requires "Image::Scale";
 requires "CHI";
+# requires "Time::ParseDate";
 
 recommends "YAML"                    => "0";
 recommends "URL::Encode::XS"         => "0";

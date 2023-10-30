@@ -1,4 +1,5 @@
 package Library;
+use Data::Dumper;
 use FindBin;
 use Dancer2;
 use Dancer2::Plugin::DBIC;
@@ -6,13 +7,17 @@ use Digest::SHA qw(sha1_hex);
 use Dancer2::Plugin::Database;
 use Dancer2::Core::Request::Upload;
 use CHI;
-
-# use File::Type;
+use DateTime;
+use Date::Calc qw(Delta_Days);
 use File::Slurp;
 use GD;
+use IPC::System::Simple qw(systemx);
 
-# use File::Type;
-# use Image::Scale;
+use Dancer2::Plugin::Email;
+use Email::Sender::Simple qw(sendmail);
+use Email::Simple;
+use Email::Simple::Creator;
+use Try::Tiny;
 
 # use  Dancer2::Session::Simple;
 # use Dancer2::Plugin::FlashNote;
@@ -25,10 +30,10 @@ use MyWeb::Schema::Result::Borrow;
 
 our $VERSION = '0.1';
 
-# configure cache 
+# configure cache
 my $cache = CHI->new(
-    driver     => 'Memory',   # Use the same driver you configured
-    global     => 1,          # Make it a global cache
+	driver     => 'Memory',   # Use the same driver you configured
+	global     => 1,          # Make it a global cache
 );
 
 
@@ -40,11 +45,10 @@ sub getCurrentDate {
 	my $month= $mon+1;
 	my $current_year= $year+1900;
 
-	my $current_date = "$current_year/$month/$mday";
+	my $current_date = "$current_year-$month-$mday";
 	my $upload_time = "$mday $months[$mon]-$hour-$min-$sec-$current_year";
 	return ( $current_date, $upload_time);
 
-	# Mon Oct 23 11:59:00 2023
 }
 
 # Reusable date function (returned date)
@@ -54,12 +58,55 @@ sub getReturnedDate {
 	my $returned_month= $mon+2;
 	my $current_year= $year+1900;
 
-	my $returned_date = "$current_year/$returned_month/$mday";
+	my $returned_date = "$current_year-$returned_month-$mday";
 	return $returned_date;
 }
 
-# Reusable registration function for admin & login
+# get '/date'=> sub {
+# 	my $session_user = session('user');
 
+# 	# return $session_user->{email};
+# 	#Finding the user_id who has issue_date and returned date;
+# 	my ($current_date) = getCurrentDate();
+# 	my $borrow_rs = schema->resultset('Borrow')->search(
+# 		{
+# 			user_id =>  $session_user->{id},
+# 			book_id => {'!='=> undef},
+# 			returned_date => {'!='=> undef},
+# 		}
+# 	)->single;
+
+# 	# return $borrow_rs->book_id;
+# 	# return $borrow_rs->user_id;
+# 	# return $borrow_rs->returned_date;
+
+# 	# Your MySQL date strings
+# 	my $date_str1 = $current_date;
+# 	my $date_str2 = $borrow_rs->returned_date;
+
+# 	# Split the date strings into year, month, and day components
+# 	my ($year1, $month1, $day1) = split('-', $date_str1);
+# 	my ($year2, $month2, $day2) = split('-', $date_str2);
+
+# 	if ($year1 && $month1 && $day1 && $year2 && $month2 && $day2) {
+
+# 		# Calculate the difference in days
+# 		my $difference = Delta_Days($year1, $month1, $day1, $year2, $month2, $day2);
+
+# 		# return "Difference in days: $difference\n";
+# 		if ($difference == 3) {
+# 			return "You have only $difference remaining for returned the book";
+# 		} elsif ($difference == 0) {
+# 			return 'You have not returned book';
+# 		}elsif ($difference < 0) {
+# 			return 'You have not returned you will be charged for per day';
+# 		}else {
+# 			return "you still have $difference days for returning";
+# 		}
+# 	}
+# };
+
+# Reusable registration function for admin & login
 
 sub registration_user_or_admin {
 	my ($data, $resultset, $salt, $redirect_route) = @_;
@@ -122,18 +169,17 @@ get '/' => sub{
 	my $data_source = 'cache';
 	if ($books) {
 		return template 'index' => { books => $books, data => $active_session, source=> $data_source};
-	}
-	else {
-	my $result = schema->resultset('Book');
-	my @books = $result->search({}, { select => ['id','title', 'image_url', 'created_at', 'updated_at', 'author', 'description'] });
+	}else {
+		my $result = schema->resultset('Book');
+		my @books = $result->search({}, { select => ['id','title', 'image_url', 'created_at', 'updated_at', 'author', 'description'] });
 
-	# cache the book data for 10 mins(600 s)
-	 $cache->set($key, \@books, '600s');
-	 $data_source = "Database"; # Data was fetched from the database
-	 return template 'index' => { books => \@books, data=>$active_session, source=> $data_source };
+		# cache the book data for 10 mins(600 s)
+		$cache->set($key, \@books, '600s');
+		$data_source = "Database"; # Data was fetched from the database
+		return template 'index' => { books => \@books, data=>$active_session, source=> $data_source };
 	}
-	
-	
+
+
 };
 
 
@@ -289,7 +335,7 @@ get '/dashboard'=> sub {
 		my @books = schema->resultset('Book')->all();
 		my @users = schema->resultset('User')->all();
 		my @borrows = schema->resultset('Borrow')->all();
-       
+
 		# for user dashboard user can see total returned books for users
 		my @total_returned_user = schema->resultset('Borrow')->search({status=>0});
 
@@ -559,6 +605,7 @@ post '/dashboard/updatebook/:id' => sub {
 		# Only update the 'image_url' column if a new image was uploaded
 		my $file = $image_url || $book_info->image_url;
 		my ($current_date) = getCurrentDate();
+
 		# my $updated_time = getCurrentDate();
 
 		# Update the book details
@@ -608,21 +655,57 @@ get '/book/details/:id'=> sub {
 	my $session_active = session('user');
 	my $autheticateduserid = $session_active->{id};
 	my $book = schema->resultset('Book')->find(params->{id});
+	my ($current_date) = getCurrentDate();
+	# return $book->title;
 
-	# my $borrow_status = schema->resultset('Borrow')->find({status=> 1,0});
-	my $borrow_status = [0, 1];  # Search for both status 0 and 1
+	# Search for both status 0 and 1
+	my $borrow_status = [0, 1];
 
-	# return $autheticateduserid;
 	#  check the user has already borrowed the book or not
 
 	my $user_id_borrow = schema->resultset('Borrow')->search(
 		{
 			user_id => $autheticateduserid,
 			book_id => params->{id},
+			returned_date => {'!='=> undef},
 			status => $borrow_status,
 		}
 	)->single;
 
+	# return $user_id_borrow->status;
+	
+	# Calculate the difference in days only if the user has borrowed the book means status == 1
+    if ($user_id_borrow && $user_id_borrow->status == 1) {
+		# MySQL date strings
+        my $date_str1 = $current_date;
+        my $date_str2 = $user_id_borrow->returned_date;
+
+        my ($year1, $month1, $day1) = split('-', $date_str1);
+        my ($year2, $month2, $day2) = split('-', $date_str2);
+
+        if ($year1 && $month1 && $day1 && $year2 && $month2 && $day2) {
+            my $difference = Delta_Days($year1, $month1, $day1, $year2, $month2, $day2);
+
+            if ($difference == 3) {
+                my $email_status = send_reminder_email($session_active->{email}, $book->title, $difference);
+				return $email_status;
+                # return "You have only $difference days remaining to return the book";
+            } elsif ($difference == 0) {
+				my $email_status = send_reminder_email($session_active->{email}, $book->title, $difference);
+				return $email_status
+                # return "You have $difference days. you have not returned the book";
+            } elsif ($difference < 0) {
+				my $email_status = send_reminder_email($session_active->{email}, $book->title, $difference);
+				return $email_status;
+                # return 'You have not returned the book; you will be charged for each day';
+            } else {
+                # return "You still have $difference days for returning the book";
+            }
+        }
+    } 
+	# elsif ($user_id_borrow && $user_id_borrow->status == 0) {
+    #     return 'You have not borrowed the book';
+    # }
 	# return $user_id_borrow->status;
 	my $status_message;
 
@@ -647,6 +730,68 @@ get '/book/details/:id'=> sub {
 
 };
 
+# send reminder mail who have borrowed books
+
+sub send_reminder_email {
+  my ($user_email, $book_title, $difference) = @_;
+
+  my $email_body;
+  if ($difference == 3) {
+	$email_body = "You have only $difference days remaining to return the book";
+  } elsif ($difference == 0) {
+	$email_body = "Your date is expired. you have not returned the book"
+  } elsif ($difference < 0) {
+	$email_body = "You have not returned the book, now you will be charged for 2 dollar each day.";
+    }
+    my $email_status;
+	try {
+       email {
+		from=> $ENV{SMTP_USERNAME},
+		to=> $user_email,
+		subject=> 'Library Reminder',
+		body=> "Dear $user_email, $email_body: $book_title.",
+		type    => 'html', # can be 'html' or 'plain'
+		# headers => {
+        #         "X-Mailer"          => 'This fine Dancer2 application',
+        #         "X-Accept-Language" => 'en',
+        #     },	
+	   }
+	} catch {
+		my $error = $_;
+		if ($error) {
+		  $email_status = "Could not send email: $error";
+		}
+		else {
+			$email_status = "System error is: $@";
+		}
+       
+	    
+    };
+	return $email_status;
+
+	#Create and send the email with a reminder message
+	# my $email_status;
+    # my $email = Email::Simple->create(
+    #     header => [
+    #         To      => $user_email,
+    #         From    => 'pabon@orangetoolz.com',  # Replace with your email
+    #         Subject => 'Library Reminder',
+    #     ],
+    #     body => "Dear $user_email, $email_body: $book_title.",
+    # );
+
+	# try {
+    #     sendmail($email);
+    #     # Log that the reminder email was sent
+    #     $email_status = "Reminder email sent successfully to $user_email.\n";
+    # } catch {
+    #     $email_status = "Error sending reminder email: $_";
+    # };
+	# return $email_status;
+}
+
+   
+
 get '/book/borrow/:id'=> sub{
 
 	# Check for a flash message in the stash
@@ -655,7 +800,6 @@ get '/book/borrow/:id'=> sub{
 	# Clear the flash message
 	app->session->write('flash_message', undef);
 	template 'user/bookdetails', {flash_message=> $flash_message,};
-
 
 };
 
@@ -678,6 +822,7 @@ post '/book/borrow'=> sub{
 
 		my ($current_date) = getCurrentDate();
 		my $returnedDate = getReturnedDate();
+		my $remaining_days = 30;
 
 		my $newBorrowRecord = schema->resultset('Borrow')->create(
 			{
@@ -685,6 +830,7 @@ post '/book/borrow'=> sub{
 				book_id=> $borrowBook->id,
 				issue_date=> $current_date,
 				returned_date=> $returnedDate,
+				remaining_days=> $remaining_days,
 
 				# status 1 means borrowed and 0 means returned.
 				status=> 1

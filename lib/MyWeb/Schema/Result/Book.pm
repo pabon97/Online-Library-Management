@@ -19,11 +19,11 @@ __PACKAGE__->add_columns(
 		size => 255,
 	},
 	'created_at' =>{
-		data_type => 'datetime',
+		data_type => 'DATE',
 		size => 20,
 	},
 	'updated_at' =>{
-		data_type => 'datetime',
+		data_type => 'DATE',
 		size => 20,
 	},
 	'author' => {
