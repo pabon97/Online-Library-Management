@@ -2,6 +2,7 @@ package Library;
 use Data::Dumper;
 use FindBin;
 use Dancer2;
+use Dancer2::Plugin::FormValidator;
 use Dancer2::Plugin::DBIC;
 use Digest::SHA qw(sha1_hex);
 use Dancer2::Plugin::Database;
@@ -28,6 +29,7 @@ use MyWeb::Schema::Result::User;
 use MyWeb::Schema::Result::Admin;
 use MyWeb::Schema::Result::Borrow;
 
+# our $userValidator = Myweb::Form::ValidateUser->new;
 our $VERSION = '0.1';
 
 # configure cache
@@ -62,49 +64,6 @@ sub getReturnedDate {
 	return $returned_date;
 }
 
-# get '/date'=> sub {
-# 	my $session_user = session('user');
-
-# 	# return $session_user->{email};
-# 	#Finding the user_id who has issue_date and returned date;
-# 	my ($current_date) = getCurrentDate();
-# 	my $borrow_rs = schema->resultset('Borrow')->search(
-# 		{
-# 			user_id =>  $session_user->{id},
-# 			book_id => {'!='=> undef},
-# 			returned_date => {'!='=> undef},
-# 		}
-# 	)->single;
-
-# 	# return $borrow_rs->book_id;
-# 	# return $borrow_rs->user_id;
-# 	# return $borrow_rs->returned_date;
-
-# 	# Your MySQL date strings
-# 	my $date_str1 = $current_date;
-# 	my $date_str2 = $borrow_rs->returned_date;
-
-# 	# Split the date strings into year, month, and day components
-# 	my ($year1, $month1, $day1) = split('-', $date_str1);
-# 	my ($year2, $month2, $day2) = split('-', $date_str2);
-
-# 	if ($year1 && $month1 && $day1 && $year2 && $month2 && $day2) {
-
-# 		# Calculate the difference in days
-# 		my $difference = Delta_Days($year1, $month1, $day1, $year2, $month2, $day2);
-
-# 		# return "Difference in days: $difference\n";
-# 		if ($difference == 3) {
-# 			return "You have only $difference remaining for returned the book";
-# 		} elsif ($difference == 0) {
-# 			return 'You have not returned book';
-# 		}elsif ($difference < 0) {
-# 			return 'You have not returned you will be charged for per day';
-# 		}else {
-# 			return "you still have $difference days for returning";
-# 		}
-# 	}
-# };
 
 # Reusable registration function for admin & login
 
@@ -115,9 +74,9 @@ sub registration_user_or_admin {
 		app->session->write('flash_message', 'User already exists');
 		redirect $redirect_route;
 	}
-	my $hashed_password = sha1_hex($data->{password} . $salt);
 
-	my $newUser = schema->resultset($resultset)->create(
+	    my $hashed_password = sha1_hex($data->{password} . $salt);
+		my $newUser = schema->resultset($resultset)->create(
 		{
 			username=> $data->{name},
 			email=> $data->{email},
@@ -125,6 +84,8 @@ sub registration_user_or_admin {
 			($resultset eq 'User' ? ('status'=> 0) : ()),
 		}
 	);
+ 
+	
 	app->session->write('flash_message', "$resultset Registered Successfully");
 	redirect $redirect_route;
 }
@@ -260,7 +221,12 @@ post '/registration' => sub {
 
 #show login page
 get '/login' => sub {
-	template 'user/login';
+	# Check for a flash message in the stash
+	my $flash_message = app->session->read('flash_message');
+
+	# Clear the flash message
+	app->session->write('flash_message', undef);
+	template 'user/login', {flash_message=> $flash_message};
 };
 
 post '/login' => sub {
@@ -288,7 +254,9 @@ post '/login' => sub {
 
 
 	}
-	return "Wrong credentials or Inactive User";
+	# return "Wrong credentials or Inactive User";
+	app->session->write('flash_message', 'Wrong Credentials or Inactive User');
+	redirect '/login';
 
 
 };
@@ -688,18 +656,18 @@ get '/book/details/:id'=> sub {
 
             if ($difference == 3) {
                 my $email_status = send_reminder_email($session_active->{email}, $book->title, $difference);
-				return $email_status;
-                # return "You have only $difference days remaining to return the book";
+				# return $email_status;
+                return "You have only $difference days remaining to return the book";
             } elsif ($difference == 0) {
 				my $email_status = send_reminder_email($session_active->{email}, $book->title, $difference);
-				return $email_status
-                # return "You have $difference days. you have not returned the book";
+				# return $email_status
+                return "You have $difference days. you have not returned the book";
             } elsif ($difference < 0) {
 				my $email_status = send_reminder_email($session_active->{email}, $book->title, $difference);
-				return $email_status;
-                # return 'You have not returned the book; you will be charged for each day';
+				# return $email_status;
+                return 'You have not returned the book; you will be charged for each day';
             } else {
-                # return "You still have $difference days for returning the book";
+                return "You still have $difference days for returning the book";
             }
         }
     } 

@@ -80,6 +80,10 @@ plugins:
       password: "root"
   ENV:
     path: '.env'
+  FormValidator:
+    session:
+     namespace: '_form_validator' # This is required field
+              
 
 # plugins:
 #   CHI:
